@@ -110,20 +110,27 @@ class PackageManager {
     }
 
     installPackage(projectName) {
-        if (!this.projects.projects || !this.projects.projects[projectName]) {
+        let foundProject = null;
+        let authorName = null;
+    
+        for (const author in this.projects.authors) {
+            if (this.projects.authors[author].projects[projectName]) {
+                foundProject = this.projects.authors[author].projects[projectName];
+                authorName = author;
+                break;
+            }
+        }
+    
+        if (!foundProject) {
             console.warn(`[WARNING] Project '${projectName}' not found in config.`);
             return;
         }
-
-        const projectInfo = this.projects.projects[projectName];
-        console.debug("Project Info:", projectInfo);
-
-        const repo = projectInfo.Repo;
-        const version = projectInfo.Version;
-        const origin = projectInfo.Origin;
-
-        console.log(`[INFO] Downloading ${projectName} from https://github.com/${projectName}/${repo}/archive/refs/tags/${version}.zip...`);
-        this.downloadWithRedirect(`https://github.com/${projectName}/${repo}/archive/refs/tags/${version}.zip`, projectName, version, origin);
+    
+        console.debug(`[INFO] Found '${projectName}' under author '${authorName}'`);
+        const { Repo, Version, Origin } = foundProject;
+    
+        console.log(`[INFO] Downloading ${projectName} from https://github.com/${authorName}/${Repo}/archive/refs/tags/${Version}.zip...`);
+        this.downloadWithRedirect(`https://github.com/${authorName}/${Repo}/archive/refs/tags/${Version}.zip`, projectName, Version, Origin);
     }
 
     downloadWithRedirect(url, projectName, version, destination) {
